@@ -1,0 +1,26 @@
+FROM nvidia/cuda:12.6.0-devel-ubuntu22.04
+
+# 設定環境變數
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安裝 Python 和 Git
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3.10 python3-pip git && \
+    rm -rf /var/lib/apt/lists/*
+
+# 複製需求文件並安裝
+COPY requirements.txt .
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir --timeout=864000 -r requirements.txt
+
+# 複製您的應用程式碼
+WORKDIR /app
+COPY app.py .
+
+# 開放 Streamlit 預設的連接埠
+EXPOSE 8084
+
+# 設定容器啟動時的預設指令
+ENTRYPOINT ["streamlit", "run", "--server.port=8084 --server.address=0.0.0.0"]
+
+CMD ["python", "app.py"]
